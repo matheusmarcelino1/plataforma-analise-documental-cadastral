@@ -8,6 +8,7 @@ using AnaliseDocumental.ApiCadastro.Infraestrutura.Eventos;
 using AnaliseDocumental.ApiCadastro.Infraestrutura.MongoDb;
 using AnaliseDocumental.ApiCadastro.Infraestrutura.S3;
 using MongoDB.Driver;
+using AnaliseDocumental.ApiCadastro.Aplicacao.Cadastros.Validacoes;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,6 +55,8 @@ builder.Services.AddScoped<IArmazenadorDocumentoService, ArmazenadorDocumentoS3S
 builder.Services.AddScoped<IPublicadorEventoDocumentoService, PublicadorEventoDocumentoLogService>();
 
 builder.Services.AddScoped<CadastrarDocumentoHandler>();
+
+builder.Services.AddSingleton<ValidadorCadastroDocumento>();
 
 builder.Services.AddProblemDetails();
 
