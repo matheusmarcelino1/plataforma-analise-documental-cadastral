@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dotnet-AnaliseDocumental.WorkerProcessor-51c7d311-0744-43b4-a531-7208f0a249af</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.S3" Version="4.0.100.1" />
+    <PackageReference Include="AWSSDK.SimpleEmailV2" Version="4.0.100.1" />
+    <PackageReference Include="AWSSDK.SQS" Version="4.0.100.1" />
+    <PackageReference Include="Confluent.Kafka" Version="2.15.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.9" />
+    <PackageReference Include="MongoDB.Driver" Version="3.9.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AnaliseDocumental.Contratos\AnaliseDocumental.Contratos.csproj" />
+    <ProjectReference Include="..\AnaliseDocumental.Compartilhado\AnaliseDocumental.Compartilhado.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/AnaliseDocumental.ApiCadastro/AnaliseDocumental.ApiCadastro.csproj" />
+    <Project Path="src/AnaliseDocumental.Compartilhado/AnaliseDocumental.Compartilhado.csproj" />
+    <Project Path="src/AnaliseDocumental.Contratos/AnaliseDocumental.Contratos.csproj" />
+    <Project Path="src/AnaliseDocumental.WorkerProcessor/AnaliseDocumental.WorkerProcessor.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/AnaliseDocumental.ApiCadastro.UnitTests/AnaliseDocumental.ApiCadastro.UnitTests.csproj" />
+    <Project Path="tests/AnaliseDocumental.WorkerProcessor.UnitTests/AnaliseDocumental.WorkerProcessor.UnitTests.csproj" />
+  </Folder>
+</Solution>
