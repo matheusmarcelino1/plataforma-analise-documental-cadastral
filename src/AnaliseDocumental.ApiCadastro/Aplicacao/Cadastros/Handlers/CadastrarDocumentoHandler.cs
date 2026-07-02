@@ -1,4 +1,5 @@
-﻿using AnaliseDocumental.ApiCadastro.Aplicacao.Cadastros.Commands;
+﻿using AnaliseDocumental.ApiCadastro.Aplicacao.Abstracoes;
+using AnaliseDocumental.ApiCadastro.Aplicacao.Cadastros.Commands;
 using AnaliseDocumental.ApiCadastro.Dominio.Entidades;
 using AnaliseDocumental.Contratos.Eventos;
 
@@ -28,18 +29,27 @@ public sealed class CadastrarDocumentoHandler
         string correlationId,
         CancellationToken cancellationToken)
     {
+        var cadastroId = Guid.NewGuid();
+        var documentoId = Guid.NewGuid();
+
         var resultadoUpload = await _armazenadorDocumentoService.SalvarAsync(
+            cadastroId,
+            documentoId,
             command.Documento,
             cancellationToken);
 
         var cadastro = CadastroDocumental.Criar(
+            cadastroId,
+            documentoId,
             command.NomeCompleto,
             command.Cpf,
             command.Email,
             resultadoUpload.Bucket,
             resultadoUpload.ChaveS3);
 
-        await _repositorioCadastroDocumental.SalvarAsync(cadastro, cancellationToken);
+        await _repositorioCadastroDocumental.SalvarAsync(
+            cadastro,
+            cancellationToken);
 
         var evento = new DocumentoCadastralRecebidoV1(
             EventoId: Guid.NewGuid(),
@@ -50,11 +60,14 @@ public sealed class CadastrarDocumentoHandler
             CorrelationId: correlationId,
             OcorreuEm: DateTimeOffset.UtcNow);
 
-        await _publicadorEventoDocumentoService.PublicarAsync(evento, cancellationToken);
+        await _publicadorEventoDocumentoService.PublicarAsync(
+            evento,
+            cancellationToken);
 
         _logger.LogInformation(
-            "Cadastro documental criado. CadastroId: {CadastroId}, CorrelationId: {CorrelationId}",
+            "Cadastro documental criado com sucesso. CadastroId: {CadastroId}, DocumentoId: {DocumentoId}, CorrelationId: {CorrelationId}",
             cadastro.Id,
+            cadastro.DocumentoId,
             correlationId);
 
         return new CadastroCriadoResponse(

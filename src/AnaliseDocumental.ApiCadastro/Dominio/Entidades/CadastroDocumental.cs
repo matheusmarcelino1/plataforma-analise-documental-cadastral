@@ -1,16 +1,26 @@
-﻿namespace AnaliseDocumental.ApiCadastro.Dominio.Entidades;
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+
+namespace AnaliseDocumental.ApiCadastro.Dominio.Entidades;
 
 public sealed class CadastroDocumental
 {
+    [BsonGuidRepresentation(GuidRepresentation.Standard)]
     public Guid Id { get; private set; }
+
+    [BsonGuidRepresentation(GuidRepresentation.Standard)]
     public Guid DocumentoId { get; private set; }
-    public string NomeCompleto { get; private set; }
-    public string Cpf { get; private set; }
-    public string Email { get; private set; }
-    public string Bucket { get; private set; }
-    public string ChaveS3 { get; private set; }
-    public string Status { get; private set; }
+    public string NomeCompleto { get; private set; } = string.Empty;
+    public string Cpf { get; private set; } = string.Empty;
+    public string Email { get; private set; } = string.Empty;
+    public string Bucket { get; private set; } = string.Empty;
+    public string ChaveS3 { get; private set; } = string.Empty;
+    public string Status { get; private set; } = string.Empty;
     public DateTimeOffset CriadoEm { get; private set; }
+
+    private CadastroDocumental()
+    {
+    }
 
     private CadastroDocumental(
         Guid id,
@@ -35,6 +45,8 @@ public sealed class CadastroDocumental
     }
 
     public static CadastroDocumental Criar(
+        Guid cadastroId,
+        Guid documentoId,
         string nomeCompleto,
         string cpf,
         string email,
@@ -42,8 +54,8 @@ public sealed class CadastroDocumental
         string chaveS3)
     {
         return new CadastroDocumental(
-            id: Guid.NewGuid(),
-            documentoId: Guid.NewGuid(),
+            id: cadastroId,
+            documentoId: documentoId,
             nomeCompleto: nomeCompleto,
             cpf: cpf,
             email: email,

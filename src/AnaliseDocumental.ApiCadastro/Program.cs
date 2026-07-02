@@ -1,41 +1,73 @@
+using Amazon.Runtime;
+using Amazon.S3;
+using AnaliseDocumental.ApiCadastro.Aplicacao.Abstracoes;
+using AnaliseDocumental.ApiCadastro.Aplicacao.Cadastros.Handlers;
+using AnaliseDocumental.ApiCadastro.Apresentacao.Endpoints;
+using AnaliseDocumental.ApiCadastro.Infraestrutura.Configuracoes;
+using AnaliseDocumental.ApiCadastro.Infraestrutura.Eventos;
+using AnaliseDocumental.ApiCadastro.Infraestrutura.MongoDb;
+using AnaliseDocumental.ApiCadastro.Infraestrutura.S3;
+using MongoDB.Driver;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.Configure<MongoDbOptions>(
+    builder.Configuration.GetSection(MongoDbOptions.SectionName));
+
+builder.Services.Configure<AwsOptions>(
+    builder.Configuration.GetSection(AwsOptions.SectionName));
+
+builder.Services.Configure<S3Options>(
+    builder.Configuration.GetSection(S3Options.SectionName));
+
+var mongoDbOptions = builder.Configuration
+    .GetSection(MongoDbOptions.SectionName)
+    .Get<MongoDbOptions>()!;
+
+builder.Services.AddSingleton<IMongoClient>(
+    _ => new MongoClient(mongoDbOptions.ConnectionString));
+
+var awsOptions = builder.Configuration
+    .GetSection(AwsOptions.SectionName)
+    .Get<AwsOptions>()!;
+
+builder.Services.AddSingleton<IAmazonS3>(_ =>
+{
+    var credenciais = new BasicAWSCredentials(
+        awsOptions.AccessKey,
+        awsOptions.SecretKey);
+
+    var configuracaoS3 = new AmazonS3Config
+    {
+        ServiceURL = awsOptions.ServiceUrl,
+        AuthenticationRegion = awsOptions.Region,
+        ForcePathStyle = true
+    };
+
+    return new AmazonS3Client(
+        credenciais,
+        configuracaoS3);
+});
+
+builder.Services.AddScoped<IRepositorioCadastroDocumental, RepositorioCadastroDocumentalMongoDb>();
+builder.Services.AddScoped<IArmazenadorDocumentoService, ArmazenadorDocumentoS3Service>();
+builder.Services.AddScoped<IPublicadorEventoDocumentoService, PublicadorEventoDocumentoLogService>();
+
+builder.Services.AddScoped<CadastrarDocumentoHandler>();
+
+builder.Services.AddProblemDetails();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+app.UseExceptionHandler();
 
-app.UseHttpsRedirection();
-
-var summaries = new[]
+app.MapGet("/health", () => Results.Ok(new
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    status = "ok",
+    service = "AnaliseDocumental.ApiCadastro",
+    timestamp = DateTimeOffset.UtcNow
+}));
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+app.MapCadastrosDocumentaisEndpoints();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
